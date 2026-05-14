@@ -22,12 +22,14 @@ Please test this firmware and let us know if it misbehaves in any way. Volunteer
 Файл общих пинов перемещён в корректную директорию архитектуры STM32F4. Исправлен путь подключения, что устраняет конфликт между определениями для F1 и F4.
 
 ## Было:
-#include "../stm32f1/pins_MKS_ROBIN_NANO_common.h"
+```bash
+  #include "../stm32f1/pins_MKS_ROBIN_NANO_common.h"
+```
 
 ## Стало:
-``bash
+```bash
   #include "pins_MKS_ROBIN_NANO_common.h"
-``
+```
 
 ## Файл расположен в: Marlin/src/pins/stm32f4/
 
@@ -35,67 +37,67 @@ Please test this firmware and let us know if it misbehaves in any way. Volunteer
 # Обновлены зависимости PlatformIO и тулчейн GCC для исправления ошибок компиляции шаблонов C++ и
 
 ## Очистка проекта перед сборкой
-``bash
+```bash
 platformio run -t clean
-``
+```
 
 ## Обновление пакетов
-``bash
+```bash
 pio platform update ststm32
 pio pkg update --global
 pio system prune
-``
+```
 
 
 # В Configuration_adv.h (~строка 1313) заменён макрос EITHER() на ANY(), так как стандартный EITHER принимает только 2 аргумента, а в коде используется проверка 3+ опций дисплея.
 ## Было (ошибка компиляции):
-``bash
+```bash
   #if EITHER(TFT_COLOR_UI, TFT_LVGL_UI, TOUCH_UI_FTDI_EVE)
-``
+```
 ## Стало (рабочий вариант):
-``bash
+```bash
   #if ANY(TFT_COLOR_UI, TFT_LVGL_UI, TOUCH_UI_FTDI_EVE)
-`` 
+```
 
 ## Версионирование и метаданные (Versioning). Включены пользовательские строки в Marlin/src/inc/Version.h для точного отслеживания сборок через M115 и стартовый экран.
-``bash
-#define SHORT_BUILD_VERSION      "bugfix-2.0.9.4.1-V5ASV"
-#define DETAILED_BUILD_VERSION   "2.0.9.4.1-ASVVIZIT-V5ASV"
+```bash
+#define SHORT_BUILD_VERSION      "bugfix-2.0.9.4.1-v5test"
+#define DETAILED_BUILD_VERSION   "2.0.9.4.1-ASVVIZIT-v5test"
 #define STRING_DISTRIBUTION_DATE "2026-05-14"
 #define MACHINE_NAME             "TwoTrees Sapphire Plus SP5"
 #define SOURCE_CODE_URL          "github.com/ASVVIZIT/SapphirePlus-Unified-Firmware"
-``
+```
 
 
 # Автоматизация сборки (CI/CD)
 # Добавлен workflow .github/workflows/build-v5asv.yml. Автоматически собирает прошивку при push в main, при создании pull_request и через ручной запуск. Поддерживает семантическое версионирование и автопубликует .bin в GitHub Releases при создании тега.
-## Создание тега для релиза
-``bash
-git tag -a "v2.0.9.4.1-V5ASV" -m "Sapphire Plus V5ASV - Initial Release"
-git push origin v2.0.9.4.1-V5ASV
-``
+## Создание тега для релиза пример
+```bash
+git tag -a "v2.0.9.4.2-v5test" -m "Sapphire Plus V5TEST - Initial Release"
+git push origin v2.0.9.4.1-v5test
+```
 ## Ручной запуск сборки через GitHub Actions
-## Перейти в репозиторий → Actions → "Build Sapphire Plus V5ASV" → "Run workflow"
-``
+## Перейти в репозиторий → Actions → "Build Sapphire Plus V5TEST" → "Run workflow"
+```
 
 # Установка и первичная настройка (Installation)
 # Прошивка готова к загрузке на плату MKS Robin Nano V1.3. Требуется стандартная процедура прошивки через SD-карту и сброс EEPROM для применения новых параметров.
 ## 1. Переименовать файл прошивки, если он автоматически не переименовался
-``bash
+```bash
 cp .pio/build/mks_robin_nano_v1_3_f4/firmware.bin robin_nano35.bin
-``
+```
 ## 2. Скопировать на SD-карту (FAT32, кластер 4096 байт) в корень
 ## 3. Вставить карту в выключенный принтер → включить питание
 ## 4. После загрузки выполнить сброс EEPROM
-``bash
+````bash
 M502    # Сбросить настройки к заводским
-``
-``bash
+```
+```bash
 M500    # Сохранить в EEPROM
-``
-``bash
+```
+```bash
 M501    # Применить сохранённые настройки
-``
+```
 
 ## Marlin 2.0 Bugfix Branch
 
