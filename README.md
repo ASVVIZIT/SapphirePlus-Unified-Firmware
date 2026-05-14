@@ -28,7 +28,7 @@ Please test this firmware and let us know if it misbehaves in any way. Volunteer
 
 ## Стало:
 ```bash
-  #include "pins_MKS_ROBIN_NANO_common.h"
+  #include "../stm32f4/pins_MKS_ROBIN_NANO_common.h"
 ```
 
 ## Файл расположен в: Marlin/src/pins/stm32f4/
