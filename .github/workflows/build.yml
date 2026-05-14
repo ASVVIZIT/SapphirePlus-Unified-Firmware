@@ -1,0 +1,34 @@
+name: Build Marlin V5ASV
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Кнопка ручного запуска
+
+jobs:
+  build:
+    runs-on: self-hosted  # Твой раннер COSMOS (Windows)
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install PlatformIO
+      run: pip install platformio
+
+    - name: Clean & Build
+      run: |
+        pio run -t clean
+        pio run -e mks_robin_nano_v1_3_f4
+
+    - name: Upload Firmware
+      uses: actions/upload-artifact@v4
+      with:
+        name: firmware-V5ASV
+        path: .pio/build/mks_robin_nano_v1_3_f4/firmware.bin
+        retention-days: 14
