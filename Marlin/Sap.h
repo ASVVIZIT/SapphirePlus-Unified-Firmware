@@ -18,12 +18,12 @@
     #define UI          //  {Marlin, ColourUI}
     #define AltFan 0        // {1: Heatsink Fan wired to Heater 1 on stock Board, 0:Default Always On Heatsink Fan}
 #elif Compiler == 1 
-    #define VL    //  {V2,V3,V4,VL} Choose between V2(2Endstop),V3(1 Endstop, Flipped Screen) , V4 (STM32F4 Chip), VL(Test Build/DONT USE(Ballscrew, Flipped Screen, Experimental Extruder))
+    #define V5ASV    //  {V2,V3,V4,VL, V5ASV} Choose between V2(2Endstop),V3(1 Endstop, Flipped Screen) , V4 (STM32F4 Chip), VL(Test Build/DONT USE(Ballscrew, Flipped Screen, Experimental Extruder)), V5ASV (Self config)
     #define Stock       //  = {Stock}
-    #define Inductive         //  = {Manual, Inductive(ideagen), BlTouch}
+    #define Manual         //  = {Manual, Inductive(ideagen), BlTouch}
     #define MeshNumber 5      // Meshnumber = {3, 5}
-    #define Marlin          //  {Marlin, ColourUI}
-    #define AltFan 1        // {1: Heatsink Fan wired to Heater 1 on stock Board, 0:Default Always On Heatsink Fan}
+    #define ColourUI          //  {Marlin, ColourUI}
+    #define AltFan 0        // {1: Heatsink Fan wired to Heater 1 on stock Board, 0:Default Always On Heatsink Fan}
 #endif
 
 
@@ -80,14 +80,32 @@
     #define INVERT_X_DIR true
     #define INVERT_Y_DIR true
     #define MOTHERBOARD BOARD_MKS_ROBIN_NANO_V1_3_F4
-    #define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 410 }
+    #define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 840 }
     #define INVERT_Z_DIR true
     #define X_DRIVER_TYPE  TMC2208_STANDALONE
     #define Y_DRIVER_TYPE  TMC2208_STANDALONE
     #define Z_DRIVER_TYPE  TMC2208_STANDALONE
-    #define Z2_DRIVER_TYPE TMC2208_STANDALONE
+    //#define Z2_DRIVER_TYPE TMC2208_STANDALONE
     #define E0_DRIVER_TYPE TMC2208_STANDALONE
     #define TFT_ROTATION TFT_ROTATE_180
+#endif
+
+#if ENABLED(V5ASV)
+    #define INVERT_X_DIR true
+    #define INVERT_Y_DIR true
+    #define MOTHERBOARD BOARD_MKS_ROBIN_NANO_V1_3_F4
+    #define DEFAULT_AXIS_STEPS_PER_UNIT { 80, 80, 400, 840 }  // E=840 (калибруй!)
+    #define INVERT_Z_DIR true
+    #define X_DRIVER_TYPE  TMC2208_STANDALONE
+    #define Y_DRIVER_TYPE  TMC2208_STANDALONE
+    #define Z_DRIVER_TYPE  TMC2208_STANDALONE 
+    #define Z2_DRIVER_TYPE  TMC2208_STANDALONE
+    #define E0_DRIVER_TYPE TMC2208_STANDALONE
+    #define TFT_ROTATION TFT_ROTATE_180
+    #define ColourUI  // ← Цветной интерфейс без assets
+
+    // Z_MULTI_ENDSTOPS НЕ включаем — один концевик
+    // NUM_Z_STEPPER_DRIVERS = 2 (по умолчанию) — верно!
 #endif
 
 /*----------------------------------------------ScreenUI-----------------------------------------------------*/

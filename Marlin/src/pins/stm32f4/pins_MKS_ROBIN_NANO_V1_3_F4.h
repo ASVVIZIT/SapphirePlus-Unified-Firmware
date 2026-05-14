@@ -42,4 +42,4 @@
 
 #define LED_PIN                             PB1
 
-#include "../stm32f1/pins_MKS_ROBIN_NANO_common.h"
+#include "../stm32f4/pins_MKS_ROBIN_NANO_common.h"

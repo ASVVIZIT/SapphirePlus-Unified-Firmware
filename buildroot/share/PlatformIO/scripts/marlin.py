@@ -19,10 +19,10 @@ def copytree(src, dst, symlinks=False, ignore=None):
 			shutil.copy2(s, d)
 
 def replace_define(field, value):
-	for define in env['CPPDEFINES']:
-		if define[0] == field:
+	for define in list(env['CPPDEFINES']):
+		if define[0] == 'STM32_FLASH_SIZE':
 			env['CPPDEFINES'].remove(define)
-	env['CPPDEFINES'].append((field, value))
+			env['CPPDEFINES'].append(('STM32_FLASH_SIZE', value))
 
 # Relocate the firmware to a new address, such as "0x08005000"
 def relocate_firmware(address):

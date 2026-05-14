@@ -10,11 +10,92 @@
 This Firmware is maintained for the Sapphire Plus 3D printer. Note to users: Download the appropriate firmware for your printer.
 V2: Non-Belted Dual Z, Dual Endstop
 V3: Belt Synced Dual Z, Single Endstop, Screen orientation Flipped ,Has Service Access Panels
-V4: MKS Robin Nano 1.3 Board (STM32F4) ,Has Service Access Panels
+V4: MKS Robin Nano 1.3 Board (STM32F4), Has Service Access Panels
 
+V5ASV: MKS Robin Nano 1.3 Board (STM32F4), Has Service Access Panels Individual Config for Me
 
 Additional documentation can be found at the [Marlin Home Page](https://marlinfw.org/).
 Please test this firmware and let us know if it misbehaves in any way. Volunteers are standing by!
+
+# Архитектура и распиновка (Board Pins)
+
+Файл общих пинов перемещён в корректную директорию архитектуры STM32F4. Исправлен путь подключения, что устраняет конфликт между определениями для F1 и F4.
+
+## Было:
+#include "../stm32f1/pins_MKS_ROBIN_NANO_common.h"
+
+## Стало:
+``bash
+  #include "pins_MKS_ROBIN_NANO_common.h"
+``
+
+## Файл расположен в: Marlin/src/pins/stm32f4/
+
+
+# Обновлены зависимости PlatformIO и тулчейн GCC для исправления ошибок компиляции шаблонов C++ и
+
+## Очистка проекта перед сборкой
+``bash
+platformio run -t clean
+``
+
+## Обновление пакетов
+``bash
+pio platform update ststm32
+pio pkg update --global
+pio system prune
+``
+
+
+# В Configuration_adv.h (~строка 1313) заменён макрос EITHER() на ANY(), так как стандартный EITHER принимает только 2 аргумента, а в коде используется проверка 3+ опций дисплея.
+## Было (ошибка компиляции):
+``bash
+  #if EITHER(TFT_COLOR_UI, TFT_LVGL_UI, TOUCH_UI_FTDI_EVE)
+``
+## Стало (рабочий вариант):
+``bash
+  #if ANY(TFT_COLOR_UI, TFT_LVGL_UI, TOUCH_UI_FTDI_EVE)
+`` 
+
+## Версионирование и метаданные (Versioning). Включены пользовательские строки в Marlin/src/inc/Version.h для точного отслеживания сборок через M115 и стартовый экран.
+``bash
+#define SHORT_BUILD_VERSION      "bugfix-2.0.9.4.1-V5ASV"
+#define DETAILED_BUILD_VERSION   "2.0.9.4.1-ASVVIZIT-V5ASV"
+#define STRING_DISTRIBUTION_DATE "2026-05-14"
+#define MACHINE_NAME             "TwoTrees Sapphire Plus SP5"
+#define SOURCE_CODE_URL          "github.com/ASVVIZIT/SapphirePlus-Unified-Firmware"
+``
+
+
+# Автоматизация сборки (CI/CD)
+# Добавлен workflow .github/workflows/build-v5asv.yml. Автоматически собирает прошивку при push в main, при создании pull_request и через ручной запуск. Поддерживает семантическое версионирование и автопубликует .bin в GitHub Releases при создании тега.
+## Создание тега для релиза
+``bash
+git tag -a "v2.0.9.4.1-V5ASV" -m "Sapphire Plus V5ASV - Initial Release"
+git push origin v2.0.9.4.1-V5ASV
+``
+## Ручной запуск сборки через GitHub Actions
+## Перейти в репозиторий → Actions → "Build Sapphire Plus V5ASV" → "Run workflow"
+``
+
+# Установка и первичная настройка (Installation)
+# Прошивка готова к загрузке на плату MKS Robin Nano V1.3. Требуется стандартная процедура прошивки через SD-карту и сброс EEPROM для применения новых параметров.
+## 1. Переименовать файл прошивки, если он автоматически не переименовался
+``bash
+cp .pio/build/mks_robin_nano_v1_3_f4/firmware.bin robin_nano35.bin
+``
+## 2. Скопировать на SD-карту (FAT32, кластер 4096 байт) в корень
+## 3. Вставить карту в выключенный принтер → включить питание
+## 4. После загрузки выполнить сброс EEPROM
+``bash
+M502    # Сбросить настройки к заводским
+``
+``bash
+M500    # Сохранить в EEPROM
+``
+``bash
+M501    # Применить сохранённые настройки
+``
 
 ## Marlin 2.0 Bugfix Branch
 

@@ -1,0 +1,116 @@
+name: Build Sapphire Plus V5ASV
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'Marlin/**'
+      - 'platformio.ini'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: 'Build number (for version suffix)'
+        required: false
+        default: '1'
+      config_name:
+        description: 'Config suffix (e.g., V5ASV, V5TEST)'
+        required: false
+        default: 'V5ASV'
+
+jobs:
+  build:
+    name: Build Firmware
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set version variables
+      id: version
+      run: |
+        BUILD_NUM="${{ github.event.inputs.build_number || github.run_number }}"
+        CONFIG="${{ github.event.inputs.config_name || 'V5ASV' }}"
+        BASE_VERSION="2.0.9.4"
+        DATE=$(date +'%Y-%m-%d')
+        SHORT="bugfix-${BASE_VERSION}.${BUILD_NUM}-${CONFIG}"
+        DETAILED="${BASE_VERSION}.${BUILD_NUM}-ASVVIZIT-${CONFIG}"
+        echo "build_num=$BUILD_NUM" >> $GITHUB_OUTPUT
+        echo "config=$CONFIG" >> $GITHUB_OUTPUT
+        echo "short=$SHORT" >> $GITHUB_OUTPUT
+        echo "detailed=$DETAILED" >> $GITHUB_OUTPUT
+        echo "date=$DATE" >> $GITHUB_OUTPUT
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Cache PlatformIO
+      uses: actions/cache@v3
+      with:
+        path: ~/.platformio
+        key: ${{ runner.os }}-pio-${{ hashFiles('**/platformio.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-pio-
+
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+
+    - name: Update Version.h
+      run: |
+        sed -i "s|#define SHORT_BUILD_VERSION .*|#define SHORT_BUILD_VERSION \"${{ steps.version.outputs.short }}\"|g" Marlin/src/inc/Version.h
+        sed -i "s|#define DETAILED_BUILD_VERSION .*|#define DETAILED_BUILD_VERSION \"${{ steps.version.outputs.detailed }}\"|g" Marlin/src/inc/Version.h
+        sed -i "s|#define STRING_DISTRIBUTION_DATE .*|#define STRING_DISTRIBUTION_DATE \"${{ steps.version.outputs.date }}\"|g" Marlin/src/inc/Version.h
+        cat Marlin/src/inc/Version.h
+
+    - name: Build Firmware
+      run: |
+        pio run -e mks_robin_nano_v1_3_f4
+
+    - name: Prepare firmware file
+      run: |
+        mkdir -p release
+        cp .pio/build/mks_robin_nano_v1_3_f4/firmware.bin \
+           release/firmware_V5ASV_${{ steps.version.outputs.short }}_$(date +'%Y%m%d').bin
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: firmware-v5asv-${{ steps.version.outputs.short }}
+        path: release/*.bin
+        retention-days: 30
+
+    - name: Create Release (if tagged)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: release/*.bin
+        name: ${{ steps.version.outputs.short }}
+        body: |
+          ## Сборка для Sapphire Plus V5ASV
+          
+          - **Плата**: MKS Robin Nano V1.3 F4
+          - **UI**: ColourUI (Ideagen3D)
+          - **ABL**: Manual + Mesh 5x5
+          - **Экструдер**: 840 steps/mm
+          - **Версия**: ${{ steps.version.outputs.short }}
+          - **Дата**: ${{ steps.version.outputs.date }}
+          
+          ### Файлы
+          - `firmware_*.bin` — готовая прошивка для SD-карты
+          
+          ### Установка
+          1. Скопируй `.bin` на отформатированную FAT32 SD-карту
+          2. Вставь карту в выключенный принтер
+          3. Включи — прошивка обновится автоматически
+          
+          > ⚠️ После прошивки: `M502` → `M500`
+        draft: false
+        prerelease: false
